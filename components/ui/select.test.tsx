@@ -38,9 +38,11 @@ describe('Select Components', () => {
     it('should render trigger with default styling', () => {
       // Arrange & Act
       render(
-        <SelectTrigger data-testid="trigger">
-          <SelectValue />
-        </SelectTrigger>
+        <Select>
+          <SelectTrigger data-testid="trigger">
+            <SelectValue />
+          </SelectTrigger>
+        </Select>
       )
       
       // Assert
@@ -61,9 +63,11 @@ describe('Select Components', () => {
     it('should apply custom className', () => {
       // Arrange & Act
       render(
-        <SelectTrigger className="custom-trigger" data-testid="trigger">
-          <SelectValue />
-        </SelectTrigger>
+        <Select>
+          <SelectTrigger className="custom-trigger" data-testid="trigger">
+            <SelectValue />
+          </SelectTrigger>
+        </Select>
       )
       
       // Assert
@@ -73,9 +77,11 @@ describe('Select Components', () => {
     it('should show chevron down icon', () => {
       // Arrange & Act
       render(
-        <SelectTrigger data-testid="trigger">
-          <SelectValue />
-        </SelectTrigger>
+        <Select>
+          <SelectTrigger data-testid="trigger">
+            <SelectValue />
+          </SelectTrigger>
+        </Select>
       )
       
       // Assert
@@ -96,7 +102,7 @@ describe('Select Components', () => {
       
       // Assert
       const trigger = screen.getByTestId('trigger')
-      expect(trigger).toHaveAttribute('aria-disabled', 'true')
+      expect(trigger).toHaveAttribute('data-disabled', '')
       expect(trigger).toHaveClass('disabled:cursor-not-allowed', 'disabled:opacity-50')
     })
   })
@@ -105,9 +111,11 @@ describe('Select Components', () => {
     it('should show placeholder when no value is selected', () => {
       // Arrange & Act
       render(
-        <SelectTrigger>
-          <SelectValue placeholder="Choose option" />
-        </SelectTrigger>
+        <Select>
+          <SelectTrigger>
+            <SelectValue placeholder="Choose option" />
+          </SelectTrigger>
+        </Select>
       )
       
       // Assert
@@ -119,9 +127,14 @@ describe('Select Components', () => {
     it('should render content with proper styling', () => {
       // Arrange & Act
       render(
-        <SelectContent data-testid="content">
-          <SelectItem value="test">Test Item</SelectItem>
-        </SelectContent>
+        <Select defaultOpen>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent data-testid="content">
+            <SelectItem value="test">Test Item</SelectItem>
+          </SelectContent>
+        </Select>
       )
       
       // Assert
@@ -139,9 +152,14 @@ describe('Select Components', () => {
     it('should apply popper positioning classes when position is popper', () => {
       // Arrange & Act
       render(
-        <SelectContent position="popper" data-testid="content">
-          <SelectItem value="test">Test Item</SelectItem>
-        </SelectContent>
+        <Select defaultOpen>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="popper" data-testid="content">
+            <SelectItem value="test">Test Item</SelectItem>
+          </SelectContent>
+        </Select>
       )
       
       // Assert
@@ -154,9 +172,16 @@ describe('Select Components', () => {
     it('should render item with proper styling', () => {
       // Arrange & Act
       render(
-        <SelectItem value="test" data-testid="item">
-          Test Item
-        </SelectItem>
+        <Select defaultOpen>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="test" data-testid="item">
+              Test Item
+            </SelectItem>
+          </SelectContent>
+        </Select>
       )
       
       // Assert
@@ -175,9 +200,16 @@ describe('Select Components', () => {
     it('should apply custom className', () => {
       // Arrange & Act
       render(
-        <SelectItem value="test" className="custom-item" data-testid="item">
-          Test Item
-        </SelectItem>
+        <Select defaultOpen>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="test" className="custom-item" data-testid="item">
+              Test Item
+            </SelectItem>
+          </SelectContent>
+        </Select>
       )
       
       // Assert
@@ -187,9 +219,16 @@ describe('Select Components', () => {
     it('should be disabled when disabled prop is true', () => {
       // Arrange & Act
       render(
-        <SelectItem value="test" disabled data-testid="item">
-          Test Item
-        </SelectItem>
+        <Select defaultOpen>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="test" disabled data-testid="item">
+              Test Item
+            </SelectItem>
+          </SelectContent>
+        </Select>
       )
       
       // Assert
@@ -201,7 +240,7 @@ describe('Select Components', () => {
     it('should show check icon when selected', () => {
       // Arrange & Act
       render(
-        <Select value="test">
+        <Select value="test" defaultOpen>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -224,9 +263,18 @@ describe('Select Components', () => {
     it('should render label with proper styling', () => {
       // Arrange & Act
       render(
-        <SelectLabel data-testid="label">
-          Categories
-        </SelectLabel>
+        <Select defaultOpen>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel data-testid="label">
+                Categories
+              </SelectLabel>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       )
       
       // Assert
@@ -239,9 +287,18 @@ describe('Select Components', () => {
     it('should apply custom className', () => {
       // Arrange & Act
       render(
-        <SelectLabel className="custom-label" data-testid="label">
-          Custom Label
-        </SelectLabel>
+        <Select defaultOpen>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel className="custom-label" data-testid="label">
+                Custom Label
+              </SelectLabel>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       )
       
       // Assert
@@ -252,7 +309,16 @@ describe('Select Components', () => {
   describe('SelectSeparator', () => {
     it('should render separator with proper styling', () => {
       // Arrange & Act
-      render(<SelectSeparator data-testid="separator" />)
+      render(
+        <Select defaultOpen>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectSeparator data-testid="separator" />
+          </SelectContent>
+        </Select>
+      )
       
       // Assert
       const separator = screen.getByTestId('separator')
@@ -262,7 +328,16 @@ describe('Select Components', () => {
 
     it('should apply custom className', () => {
       // Arrange & Act
-      render(<SelectSeparator className="custom-separator" data-testid="separator" />)
+      render(
+        <Select defaultOpen>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectSeparator className="custom-separator" data-testid="separator" />
+          </SelectContent>
+        </Select>
+      )
       
       // Assert
       expect(screen.getByTestId('separator')).toHaveClass('custom-separator')
@@ -273,7 +348,7 @@ describe('Select Components', () => {
     it('should render complete select structure', () => {
       // Arrange & Act
       render(
-        <Select>
+        <Select defaultOpen>
           <SelectTrigger data-testid="trigger">
             <SelectValue placeholder="Select option" />
           </SelectTrigger>
@@ -356,7 +431,7 @@ describe('Select Components', () => {
       
       // Assert
       const trigger = screen.getByTestId('trigger')
-      expect(trigger).toHaveAttribute('aria-disabled', 'true')
+      expect(trigger).toHaveAttribute('data-disabled', '')
     })
   })
 
@@ -448,7 +523,7 @@ describe('Select Components', () => {
     it('should handle long option text', () => {
       // Arrange & Act
       render(
-        <Select>
+        <Select defaultOpen>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

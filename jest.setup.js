@@ -8,6 +8,44 @@ if (typeof global.TextDecoder === 'undefined') {
   global.TextDecoder = require('util').TextDecoder
 }
 
+// Mock Request/Response for Next.js server components
+if (typeof global.Request === 'undefined') {
+  global.Request = class Request {
+    constructor(input, init = {}) {
+      this.url = input
+      this.method = init.method || 'GET'
+      this.headers = new Map(Object.entries(init.headers || {}))
+      this._body = init.body
+    }
+    
+    async json() {
+      return JSON.parse(this._body || '{}')
+    }
+    
+    async text() {
+      return this._body || ''
+    }
+  }
+}
+
+if (typeof global.Response === 'undefined') {
+  global.Response = class Response {
+    constructor(body, init = {}) {
+      this.body = body
+      this.status = init.status || 200
+      this.headers = new Map(Object.entries(init.headers || {}))
+    }
+    
+    async json() {
+      return JSON.parse(this.body || '{}')
+    }
+    
+    async text() {
+      return this.body || ''
+    }
+  }
+}
+
 // Mock scrollIntoView for Radix UI components
 Element.prototype.scrollIntoView = jest.fn()
 
@@ -58,4 +96,11 @@ jest.mock('next/navigation', () => ({
 jest.mock('react-dom', () => ({
   ...jest.requireActual('react-dom'),
   useFormStatus: () => ({ pending: false }),
+}))
+
+// Mock Next.js cache functions
+jest.mock('next/cache', () => ({
+  unstable_cache: jest.fn((fn) => fn),
+  revalidateTag: jest.fn(),
+  revalidatePath: jest.fn(),
 }))
