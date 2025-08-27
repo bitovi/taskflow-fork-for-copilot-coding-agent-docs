@@ -1,0 +1,120 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test on Node.js ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+
+      - name: DB setup
+        run: npm run db:setup
+      
+      - name: TypeScript type checking
+        id: typecheck
+        run: npm run type-check
+        continue-on-error: true
+      
+      - name: ESLint code linting
+        id: lint
+        run: npm run lint
+        continue-on-error: true
+      
+      - name: Run unit tests
+        id: test
+        run: npm run test
+        continue-on-error: true
+      
+      - name: Generate test coverage
+        id: coverage
+        run: npm run test:coverage
+        continue-on-error: true
+      
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.node-version == '20.x'  # Only upload coverage once
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false  # Don't fail CI if coverage upload fails
+      
+      - name: Build application
+        id: build
+        run: npm run build
+        continue-on-error: true
+
+      # Comment on PR when any step fails
+      - name: Comment on PR failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failures = [];
+            
+            if ('${{ steps.typecheck.outcome }}' === 'failure') {
+              failures.push('❌ **TypeScript compilation failed**');
+            }
+            if ('${{ steps.lint.outcome }}' === 'failure') {
+              failures.push('❌ **ESLint found issues**');
+            }
+            if ('${{ steps.test.outcome }}' === 'failure') {
+              failures.push('❌ **Unit tests failed**');
+            }
+            if ('${{ steps.coverage.outcome }}' === 'failure') {
+              failures.push('❌ **Test coverage failed**');
+            }
+            if ('${{ steps.build.outcome }}' === 'failure') {
+              failures.push('❌ **Build process failed**');
+            }
+            
+            if (failures.length > 0) {
+              const body = `
+            ## 🚨 CI Build Failed
+            
+            The following issues were found:
+            
+            ${failures.join('\n')}
+            
+            **Build Details:**
+            - **Commit:** ${context.sha.substring(0, 7)}
+            - **Workflow Run:** [View Details](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            - **Node Version:** ${{ matrix.node-version }}
+            
+            @copilot please analyze these CI failures and suggest fixes for the issues above.
+            
+            ---
+            *This comment was automatically generated when the CI pipeline failed.*
+              `.trim();
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
+            
+      # Fail the job if any critical steps failed
+      - name: Check for failures
+        if: steps.typecheck.outcome == 'failure' || steps.lint.outcome == 'failure' || steps.test.outcome == 'failure' || steps.build.outcome == 'failure'
+        run: exit 1

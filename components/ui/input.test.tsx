@@ -67,7 +67,7 @@ describe('Input Component', () => {
       renderInput({ 'data-testid': 'input' })
       
       // Assert
-      const input = screen.getByTestId('input')
+      const input = screen.getByTestId('input') as HTMLInputElement
       // Input without explicit type defaults to text, but may not have type attribute set
       expect(input.type).toBe('text')
     })
