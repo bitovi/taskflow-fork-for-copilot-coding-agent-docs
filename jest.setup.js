@@ -1,5 +1,16 @@
 import '@testing-library/jest-dom'
 
+// Mock TextEncoder/TextDecoder for Next.js server components
+if (typeof global.TextEncoder === 'undefined') {
+  global.TextEncoder = require('util').TextEncoder
+}
+if (typeof global.TextDecoder === 'undefined') {
+  global.TextDecoder = require('util').TextDecoder
+}
+
+// Mock scrollIntoView for Radix UI components
+Element.prototype.scrollIntoView = jest.fn()
+
 // Mock ResizeObserver for Radix UI components
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),

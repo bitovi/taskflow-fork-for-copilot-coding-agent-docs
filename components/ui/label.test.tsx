@@ -396,7 +396,7 @@ describe('Label Component', () => {
       
       // Assert
       expect(container.firstChild).toBeInTheDocument()
-      expect(container.firstChild.textContent).toBe('Simple Label')
+      expect(container.firstChild?.textContent).toBe('Simple Label')
     })
 
     it('should handle re-renders without issues', () => {
