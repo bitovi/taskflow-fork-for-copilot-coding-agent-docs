@@ -9,23 +9,17 @@ Modern task management app built with Next.js 14, React, TypeScript, Prisma, and
 ### Bootstrap and Dependencies
 - **Node.js requirement**: Version 18 or greater (tested with v20.19.4)
 - **Install dependencies**: `npm install` — takes 30 seconds, installs 484 packages. NEVER CANCEL.
-- **CRITICAL**: Network restrictions may prevent external downloads. Common failures:
-  - Prisma binary downloads fail with `ENOTFOUND binaries.prisma.sh`
-  - Google Fonts fail with `ENOTFOUND fonts.googleapis.com`
-  - These are environmental limitations, not code issues
 
 ### Development Server
-- **Start development**: `npm run dev` — Ready in 60-90 seconds. NEVER CANCEL.
-- **TIMING**: Compilation ~2-3 seconds, full ready state ~60 seconds with font warnings
-- **Expected warnings**: Google Fonts download failures (fallback fonts used automatically)
+- **Start development**: `npm run dev` — Ready in ~1 second. NEVER CANCEL.
+- **TIMING**: Compilation ~2-3 seconds, full ready state ~1 second
 - **Verify**: Application loads at http://localhost:3000 (redirects to /login)
 
 ### Database Setup
 - **Database file**: SQLite at `prisma/app.db`
-- **NETWORK LIMITATION**: `npm run db:setup` fails due to Prisma binary restrictions
+- **Setup command**: `npm run db:setup` — Generates Prisma client, creates database, and seeds test data
 - **Schema location**: `prisma/schema.prisma` contains complete database structure
-- **Workaround for development**: Create mock Prisma client in `app/generated/prisma/`
-- **Manual validation**: App functions without database by redirecting to login page
+- **Manual operations**: Use `npx prisma generate`, `npx prisma db push`, `npm run db:seed` individually
 
 ### Linting and Code Quality
 - **Lint code**: `npm run lint` — Completes in 5-10 seconds
@@ -34,9 +28,9 @@ Modern task management app built with Next.js 14, React, TypeScript, Prisma, and
 
 ### Build Process
 - **Build command**: `npm run build`
-- **NETWORK LIMITATION**: Fails due to Google Fonts download restrictions
-- **Status**: Build cannot complete in network-restricted environments
-- **Workaround**: Development server works with fallback fonts
+- **Note**: Build fails due to ESLint errors in generated Prisma client files (expected)
+- **Development**: Use `npm run dev` for active development
+- **Linting**: Generated Prisma files contain expected linting violations
 
 ## Validation Scenarios
 
@@ -45,12 +39,13 @@ Modern task management app built with Next.js 14, React, TypeScript, Prisma, and
 2. **Login page access**: Verify redirect to `/login` and form renders
 3. **Signup page access**: Navigate to `/signup` and verify form renders
 4. **Navigation flow**: Test basic routing between login/signup pages
-5. **Component loading**: Verify UI components load despite font warnings
+5. **Component loading**: Verify UI components load properly
+6. **Database functionality**: Test task creation, editing, and listing after login
 
 ### NEVER CANCEL warnings:
 - `npm install`: May take up to 45 seconds depending on network
-- `npm run dev`: Initial compilation may take 90 seconds with external resource warnings
-- Any Prisma operations: Will fail in restricted environments but app still functions
+- `npm run dev`: Ready in ~1 second, very fast startup
+- Prisma operations: Work normally for database setup and generation
 
 ## Repository Structure and Patterns
 
@@ -101,28 +96,23 @@ Modern task management app built with Next.js 14, React, TypeScript, Prisma, and
 2. Update session handling as needed
 3. Test login/logout flow thoroughly
 
-## Network Limitations and Workarounds
+## Development Environment
 
-### Known failures in restricted environments:
-- **Prisma binary downloads**: `npx prisma generate` fails
-- **Google Fonts**: Build fails, dev server shows warnings but works
-- **Database seeding**: Cannot download Prisma binaries for full setup
+### Environment Status
+- **Network Access**: Full access enabled (Prisma binaries, Google Fonts, external resources)
+- **Database Operations**: All Prisma commands work normally
+- **Build Process**: Font downloads work, build fails due to expected ESLint errors in generated files
+- **Development Server**: Fast startup, no external resource warnings
 
-### Development workarounds:
-- Use mock Prisma client for development
-- Accept font fallbacks (application functions normally)
-- Focus on code structure and component behavior
-- Validate UI functionality over data persistence
-
-### Production considerations:
-- All commands work in unrestricted environments
-- Database setup requires network access for Prisma binaries
-- Build process requires access to fonts.googleapis.com
+### Key Operations
+- **Database setup**: `npm run db:setup` works fully (generates client, creates DB, seeds data)
+- **Prisma client**: Generated at `app/generated/prisma/` via `npx prisma generate`
+- **Development workflow**: Standard Next.js development with full database functionality
 
 ## Default Test Credentials
 - **Email**: `alice@example.com`
 - **Password**: `password123`
-- **Note**: Database seeding may not work in restricted environments
+- **Note**: Database is seeded with test users and tasks via `npm run db:setup`
 
 ## Frequently Accessed Files
 ```
@@ -136,6 +126,6 @@ package.json — Project configuration
 
 ## CI/CD Considerations
 - Always run `npm run lint` before committing
-- Build process requires unrestricted network access
-- Database operations require Prisma binary access
-- Font warnings are acceptable in development
+- Build process has access to external resources but fails on ESLint errors in generated files
+- Database operations work normally with full Prisma functionality
+- Development server starts quickly with no external resource warnings
