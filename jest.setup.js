@@ -7,6 +7,22 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }))
 
+// Mock pointer capture for Radix UI select
+Object.defineProperty(HTMLElement.prototype, 'hasPointerCapture', {
+  value: jest.fn().mockReturnValue(false),
+  writable: true,
+})
+
+Object.defineProperty(HTMLElement.prototype, 'setPointerCapture', {
+  value: jest.fn(),
+  writable: true,
+})
+
+Object.defineProperty(HTMLElement.prototype, 'releasePointerCapture', {
+  value: jest.fn(),
+  writable: true,
+})
+
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter() {
