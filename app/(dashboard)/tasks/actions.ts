@@ -48,6 +48,12 @@ export async function getAllTasks() {
             include: {
                 assignee: { select: { id: true, name: true, email: true, password: true } },
                 creator: { select: { id: true, name: true, email: true, password: true } },
+                comments: {
+                    include: {
+                        author: { select: { id: true, name: true, email: true } }
+                    },
+                    orderBy: { createdAt: "asc" }
+                }
             },
             orderBy: { createdAt: "desc" },
         });
@@ -182,5 +188,71 @@ export async function getTeamStats() {
             topPerformer: null,
             error: "Failed to fetch team statistics.",
         };
+    }
+}
+
+// Add a comment to a task
+export async function addComment(taskId: number, content: string) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { error: "Not authenticated.", success: false };
+
+        if (!content.trim()) return { error: "Comment content is required.", success: false };
+
+        await prisma.comment.create({
+            data: {
+                content: content.trim(),
+                taskId,
+                authorId: user.id,
+            },
+        });
+        
+        revalidatePath("/tasks");
+        return { error: null, success: true, message: "Comment added successfully!" };
+    } catch (e) {
+        return { error: "Failed to add comment.", success: false };
+    }
+}
+
+// Get comments for a specific task
+export async function getTaskComments(taskId: number) {
+    try {
+        const comments = await prisma.comment.findMany({
+            where: { taskId },
+            include: {
+                author: { select: { id: true, name: true, email: true } }
+            },
+            orderBy: { createdAt: "asc" },
+        });
+        return { comments, error: null };
+    } catch (e) {
+        return { comments: [], error: "Failed to fetch comments." };
+    }
+}
+
+// Delete a comment (only by author or task creator)
+export async function deleteComment(commentId: number) {
+    try {
+        const user = await getCurrentUser();
+        if (!user) return { error: "Not authenticated.", success: false };
+
+        const comment = await prisma.comment.findUnique({
+            where: { id: commentId },
+            include: { task: { select: { creatorId: true } } }
+        });
+
+        if (!comment) return { error: "Comment not found.", success: false };
+
+        // Only comment author or task creator can delete
+        if (comment.authorId !== user.id && comment.task.creatorId !== user.id) {
+            return { error: "Not authorized to delete this comment.", success: false };
+        }
+
+        await prisma.comment.delete({ where: { id: commentId } });
+        
+        revalidatePath("/tasks");
+        return { error: null, success: true, message: "Comment deleted successfully!" };
+    } catch (e) {
+        return { error: "Failed to delete comment.", success: false };
     }
 }
