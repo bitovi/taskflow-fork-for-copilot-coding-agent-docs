@@ -8,16 +8,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { MoreHorizontal, Clock, Edit, Trash2 } from "lucide-react"
+import { MoreHorizontal, Clock, Edit, Trash2, MessageCircle } from "lucide-react"
 import { deleteTask, updateTaskStatus } from "@/app/(dashboard)/tasks/actions"
 import { formatDateForDisplay } from "@/lib/date-utils"
 import { EditTaskForm } from "./edit-task-form"
+import { TaskComments } from "./task-comments"
 import { poppins } from "@/lib/fonts"
+import { getCurrentUser } from "@/app/login/actions"
 
-import type { Task as PrismaTask, User } from "@/app/generated/prisma/client";
+import type { Task as PrismaTask, User, Comment } from "@/app/generated/prisma/client";
+
+type CommentWithAuthor = Comment & {
+  author: Pick<User, "id" | "name" | "email">
+}
 
 type TaskWithProfile = PrismaTask & {
   assignee?: Pick<User, "name"> | null;
+  comments?: CommentWithAuthor[];
 };
 
 export function TaskList({ initialTasks }: { initialTasks: TaskWithProfile[]; }) {
@@ -36,6 +43,20 @@ export function TaskList({ initialTasks }: { initialTasks: TaskWithProfile[]; })
   const [isPending, startTransition] = useTransition()
   const [openDialogs, setOpenDialogs] = useState<Record<number, boolean>>({})
   const [openDropdowns, setOpenDropdowns] = useState<Record<number, boolean>>({})
+  const [currentUser, setCurrentUser] = useState<{ id: number; name: string; email: string } | null>(null)
+
+  useEffect(() => {
+    // Get current user for comment functionality
+    const loadCurrentUser = async () => {
+      try {
+        const user = await getCurrentUser()
+        setCurrentUser(user)
+      } catch (error) {
+        console.error("Failed to load current user:", error)
+      }
+    }
+    loadCurrentUser()
+  }, [])
 
   const handleDelete = async (taskId: number) => {
     startTransition(async () => {
@@ -121,6 +142,13 @@ export function TaskList({ initialTasks }: { initialTasks: TaskWithProfile[]; })
                           <span>{formatDateForDisplay(task.dueDate)}</span>
                         </div>
                       )}
+
+                      {task.comments && task.comments.length > 0 && (
+                        <div className="flex items-center space-x-1 text-muted-foreground">
+                          <MessageCircle className="h-4 w-4" />
+                          <span>{task.comments.length}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -151,11 +179,20 @@ export function TaskList({ initialTasks }: { initialTasks: TaskWithProfile[]; })
               </div>
             </CardContent>
           </Card>
-          <DialogContent>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Edit Task</DialogTitle>
+              <DialogTitle>Task Details</DialogTitle>
             </DialogHeader>
-            <EditTaskForm task={task} onFinish={() => handleCloseDialog(task.id)} />
+            <div className="space-y-6">
+              <EditTaskForm task={task} onFinish={() => handleCloseDialog(task.id)} />
+              <hr className="border-t border-gray-200" />
+              <TaskComments 
+                taskId={task.id} 
+                comments={task.comments || []} 
+                currentUserId={currentUser?.id}
+                taskCreatorId={task.creatorId}
+              />
+            </div>
           </DialogContent>
         </Dialog>
       ))}
